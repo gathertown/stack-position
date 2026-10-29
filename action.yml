@@ -1,0 +1,31 @@
+name: "Stack position"
+description: "Reports skip=true on a PR with an open PR stacked on it, so its required jobs can skip"
+author: "Gather"
+branding:
+  icon: "layers"
+  color: "blue"
+
+inputs:
+  github-token:
+    description: "Token that can list PRs, read labels, and compare commits. Needs `contents: read` and `pull-requests: read`."
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  skip:
+    description: "'true' when an open PR above contains this PR's head and there's no ci/run-full label"
+    value: ${{ steps.stack-position.outputs.skip }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check for an open PR stacked on this one
+      id: stack-position
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        GH_REPO: ${{ github.repository }}
+        HEAD_REF: ${{ github.head_ref }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: '"$GITHUB_ACTION_PATH/stack-position.sh"'

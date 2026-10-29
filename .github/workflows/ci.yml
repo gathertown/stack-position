@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: shellcheck stack-position.sh
+
+  # Runs the action on its own PR, so a broken action.yml fails before it's tagged.
+  self-test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v5
+      - id: position
+        uses: ./
+      - env:
+          SKIP: ${{ steps.position.outputs.skip }}
+        run: '[[ "$SKIP" == "true" || "$SKIP" == "false" ]]'
+
+  # Moves the major tag (v1) to each vX.Y.Z tag once lint passes, so callers pinned to @v1 get it.
+  retag-major:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [lint]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          major="${TAG%%.*}"
+          git tag -f "$major" "$TAG"
+          git push origin -f "refs/tags/$major"
