@@ -47,14 +47,14 @@ Create a `ci/run-full` label in your repo. Add it to a PR, then re-run the skipp
 
 ## Inputs
 
-| Input          | Default        | Description                                                                                        |
-| -------------- | -------------- | -------------------------------------------------------------------------------------------------- |
+| Input          | Default        | Description                                                                                     |
+| -------------- | -------------- | ----------------------------------------------------------------------------------------------- |
 | `github-token` | `github.token` | Lists PRs, reads labels and compares commits. Needs `contents: read` and `pull-requests: read`. |
 
 ## Outputs
 
-| Output | Description                                                                                  |
-| ------ | -------------------------------------------------------------------------------------------- |
+| Output | Description                                                                               |
+| ------ | ----------------------------------------------------------------------------------------- |
 | `skip` | `'true'` when an open PR above contains this PR's head and there's no `ci/run-full` label |
 
 ## Releasing
